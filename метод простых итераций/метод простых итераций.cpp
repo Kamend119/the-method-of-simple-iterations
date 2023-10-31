@@ -2,10 +2,8 @@
 #include <cmath>
 using namespace std;
 
-// Количество уровнений
-int count_equation;
-// Колисчество элементов в уровнениях
-int count_element;
+// Разрядность системы
+int count_razr;
 // Точность вычисления
 float eps = 0;
 //
@@ -27,14 +25,9 @@ float* ostan;
 void getting_started()
 {
 	do {
-		cout << "Задайте количество уравнений: ";
-		cin >> count_equation;
-	} while (count_equation <= 0);
-
-	do {
-		cout << "Задайте количество переменных в уравнении: ";
-		cin >> count_element;
-	} while (count_element <= 0);
+		cout << "Задайте разрядность системы: ";
+		cin >> count_razr;
+	} while (count_razr <= 0);
 
 	do {
 		cout << "Задайте точность вычисления: ";
@@ -42,31 +35,31 @@ void getting_started()
 	} while (eps <= 0);
 
 	// Выделение памяти после ввода значений
-	systems = new float* [count_equation];
-	for (int i = 0; i < count_equation; ++i) {
-		systems[i] = new float[count_element];
+	systems = new float* [count_razr];
+	for (int i = 0; i < count_razr; ++i) {
+		systems[i] = new float[count_razr];
 	}
 
-	z = new float[count_equation];
-	norma_martitz = new float[count_equation];
-	x0 = new float[count_equation];
-	x1 = new float[count_equation];
-	ostan = new float[count_equation];
+	z = new float[count_razr];
+	norma_martitz = new float[count_razr];
+	x0 = new float[count_razr];
+	x1 = new float[count_razr];
+	ostan = new float[count_razr];
 
 }
 
 // Заполнение неизвестных членов системы
 void filling_system_element()
 {
-	for (int i = 0; i < count_equation; ++i)
+	for (int i = 0; i < count_razr; ++i)
 	{
-		for (int j = 0; j < count_element; ++j)
+		cout << endl;
+
+		for (int j = 0; j < count_razr; ++j)
 		{
 			cout << "Задайте " << (j + 1) << " переменную " << (i + 1) << " урaвнения: ";
 			cin >> systems[i][j];
 		}
-
-		cout << endl;
 	}
 }
 
@@ -74,7 +67,7 @@ void filling_system_element()
 // Заполнение свободных членов системы
 void filling_system_z()
 {
-	for (int i = 0; i < count_equation; ++i)
+	for (int i = 0; i < count_razr; ++i)
 	{
 		cout << "Задайте свободный член " << (i + 1) << " урaвнения: ";
 		cin >> z[i];
@@ -85,11 +78,11 @@ void filling_system_z()
 void norma_martitzs()
 {
 	// Построчные нормы матрицы
-	for (int i = 0; i < count_equation; ++i)
+	for (int i = 0; i < count_razr; ++i)
 	{
 		float summ = 0;
 
-		for (int m = 0; m < count_element; ++m)
+		for (int m = 0; m < count_razr; ++m)
 		{
 			if (i != m)
 				summ += systems[i][m];
@@ -100,7 +93,7 @@ void norma_martitzs()
 
 	double max = -100000000000000.00;
 
-	for (int i = 0; i < count_equation; ++i)
+	for (int i = 0; i < count_razr; ++i)
 	{
 		if (fabs(norma_martitz[i]) > max)
 		{
@@ -115,25 +108,38 @@ void norma_martitzs()
 // Условие остановки
 void stop_condition()
 {
-	for (int i = 0; i < count_equation; ++i)
+	for (int i = 0; i < count_razr; ++i)
 	{
 		ostan[i] = fabs(c / (1 - c)) * fabs(x0[i] - x1[i]);
 	}
 }
 
 // нулевое приближение n
-void zero_approximation()
+void zero_approximation_method_simpl_iteration()
 {
 	// x(n)
-	for (int i = 0; i < count_equation; ++i)
+	for (int i = 0; i < count_razr; ++i)
 	{
 		x0[i] = z[i] / systems[i][i];
 	}
 }
 
+void zero_approximation_method_zeidela()
+{
+	// x(n)
+	for (int i = 0; i < count_razr; ++i)
+	{
+		if (i == 0)
+		{
+			x0[i] = z[i] / systems[i][i];
+		}
+		else x0[i] = 0;
+	}
+}
+
 void clear()
 {
-	for (int i = 0; i < count_equation; ++i) {
+	for (int i = 0; i < count_razr; ++i) {
 		delete[] systems[i];
 	}
 	delete[] systems;
@@ -144,11 +150,11 @@ void clear()
 	delete[] ostan;
 }
 
-void calculation()
+void calculation_method_simpl_iteration()
 {
 	//Начало работы
 	getting_started();
-	
+
 	// Заполнение неизвестных членов системы
 	filling_system_element();
 
@@ -161,7 +167,7 @@ void calculation()
 	if (c < 1 && c > 0)
 	{
 		// нулевое приближение n
-		zero_approximation();
+		zero_approximation_method_simpl_iteration();
 
 		int ostanovka;
 		int a = 0;
@@ -171,11 +177,11 @@ void calculation()
 
 			ostanovka = 0;
 
-			for (int i = 0; i < count_equation; ++i)
+			for (int i = 0; i < count_razr; ++i)
 			{
 				float summ = 0;
 
-				for (int m = 0; m < count_element; ++m)
+				for (int m = 0; m < count_razr; ++m)
 				{
 					if (i != m)
 						summ += (systems[i][m] * x0[m]);
@@ -187,7 +193,7 @@ void calculation()
 			// Условие остановки
 			stop_condition();
 
-			for (int i = 0; i < count_equation; ++i)
+			for (int i = 0; i < count_razr; ++i)
 			{
 				x0[i] = x1[i];
 
@@ -195,11 +201,11 @@ void calculation()
 					ostanovka++;
 			}
 
-		} while (ostanovka != count_equation);
+		} while (ostanovka != count_razr);
 
 		cout << endl << "Ответ:" << endl;
 
-		for (int i = 0; i < count_equation; ++i)
+		for (int i = 0; i < count_razr; ++i)
 		{
 			cout << "x(n):" << (x0[i]) << " Оценка:" << (ostan[i]) << endl;
 		}
@@ -211,14 +217,102 @@ void calculation()
 	clear();
 }
 
+void calculation_method_zeidela()
+{
+	//Начало работы
+	getting_started();
+
+	// Заполнение неизвестных членов системы
+	filling_system_element();
+
+	// Заполнение свободных членов системы
+	filling_system_z();
+
+	// Нормы матриц
+	norma_martitzs();
+
+	if (c < 1 && c > 0)
+	{
+		// нулевое приближение n
+		zero_approximation_method_zeidela();
+
+		int ostanovka, a = 0;
+		do {
+			ostanovka = 0, a++;
+
+			for (int i = 0; i < count_razr; ++i)
+			{
+				float summ = 0;
+
+				for (int m = 0; m < count_razr; ++m)
+				{
+					if (i != m)
+					{
+						if (i == 0)
+							summ += (systems[i][m] * x0[m]);
+						else
+						{
+							if (m <= i)
+								summ += (systems[i][m] * x1[m]);
+							else 
+								summ += (systems[i][m] * x0[m]);
+						}
+					}
+						
+				}
+
+				x1[i] = (z[i] - summ) / systems[i][i];
+			}
+
+			// Условие остановки
+			stop_condition();
+
+			for (int i = 0; i < count_razr; ++i)
+			{
+				x0[i] = x1[i];
+
+				if (ostan[i] < eps)
+					ostanovka++;
+			}
+
+		} while (ostanovka != count_razr);
+
+		cout << endl << "Ответ:" << endl;
+
+		for (int i = 0; i < count_razr; ++i)
+		{
+			cout << "x(n):" << (x0[i]) << " Оценка:" << (ostan[i]) << endl;
+		}
+
+		cout << "Количество итераций: " << a << endl;
+	}
+
+	else
+		cout << endl << "Система не сходится";
+
+	clear();
+}
+
+void method_selection()
+{
+	int a = 0;
+	cout << "Выберите метод решения СЛАУ" << endl << "1. Метод простых итераций (число 1)" << endl << "2. Метод Зейделя (число 2)" << endl;
+	cin >> a;
+
+	if (a == 1)
+		calculation_method_simpl_iteration();
+	if (a == 2)
+		calculation_method_zeidela();
+
+	else
+		cout << "Такого метода нету";
+}
 
 int main()
 {
-	//setlocale(LC_ALL, "Russian");
-	//setlocale(0, "");
 	setlocale(LC_ALL, "Rus");
 
-	calculation();
+	method_selection();
 
 	cin.get();
 	cin.get();
